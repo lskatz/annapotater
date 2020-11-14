@@ -21,6 +21,8 @@ and the next parameter is a gzipped VCF file.
 
 # Output
 
+Prints vcf to stdout.
+
 Adds a notation onto the INFO field with the key `EFF`.
 E.g.,
 `EFF=NONSYNONYMOUS`
