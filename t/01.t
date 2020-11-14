@@ -11,9 +11,9 @@ $ENV{PATH}="$RealBin/../scripts:$ENV{PATH}";
 subtest 'annotate' => sub{
   my $vcf = "$RealBin/data/SRR12894848.vcf.gz";
   my $gbk = "$RealBin/data/MN908947.3.gbk";
-  my @out = `annopotater.pl $gbk $vcf`;
+  my @out = `annapotater.pl $gbk $vcf`;
   if($?){
-    BAIL_OUT("ERROR: could not run annopotater.pl: $!");
+    BAIL_OUT("ERROR: could not run annapotater.pl: $!");
   }
   chomp(@out);
 
