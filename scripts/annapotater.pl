@@ -9,7 +9,7 @@ use File::Basename qw/basename/;
 use Array::IntSpan;
 use Bio::SeqIO;
 
-our $VERSION = 0.1;
+our $VERSION = 0.2;
 
 my @vcfHeader = qw(chrom pos id ref alt qual filter info format formatValues);
 
@@ -19,7 +19,11 @@ exit(main());
 
 sub main{
   my $settings={};
-  GetOptions($settings,qw(help)) or die $!;
+  GetOptions($settings,qw(version help)) or die $!;
+  if($$settings{version}){
+    print "$0 v$VERSION\n";
+    exit 0;
+  }
   usage() if($$settings{help} || !@ARGV);
 
   my($gbk, @vcf) = @ARGV;
