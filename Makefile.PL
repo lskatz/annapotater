@@ -6,11 +6,11 @@ use 5.010;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-  NAME         => 'Annopotater',
-  VERSION_FROM => 'scripts/annopotater.pl',
+  NAME         => 'Annapotater',
+  VERSION_FROM => 'scripts/annapotater.pl',
   AUTHOR => q{Lee S. Katz <gzu2@cdc.gov>},
   EXE_FILES    => [
-    'scripts/annopotater.pl',
+    'scripts/annapotater.pl',
   ],
   PREREQ_PM    => {
     # Core modules
@@ -37,8 +37,8 @@ WriteMakefile(
     resources => {
       repository => {
         type => 'git',
-        url => 'git://github.com/lskatz/annopotater.git',
-        web => 'https://github.com/lskatz/annopotater',
+        url => 'git://github.com/lskatz/annapotater.git',
+        web => 'https://github.com/lskatz/annapotater',
       },
     },
   },

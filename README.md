@@ -1,4 +1,4 @@
-# Annopotater
+# Annapotater
 
 A quick and dirty SNP annotator.
 Only annotates SYNONYMOUS, NONSYNONYMOUS, or STOP.
@@ -7,13 +7,13 @@ Does not work on multisnp sites or indels.
 
 # Installation
 
-    cd annopotater
+    cd annapotater
     make
     make test
 
 # Usage
 
-    perl scripts/annopotater.pl t/data/MN908947.3.gbk t/out.vcf.gz.masked.vcf.gz
+    perl scripts/annapotater.pl t/data/MN908947.3.gbk t/out.vcf.gz.masked.vcf.gz
 
 Give it a genbank file with CDS features and sequence,
 and the next parameter is a gzipped VCF file.
