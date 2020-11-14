@@ -33,3 +33,9 @@ E.g.,
   * BioPerl
   * Array::IntSpan
 
+# Etymology
+
+Tomato, tomato  
+Potato, potato  
+Anna, anna  
+
