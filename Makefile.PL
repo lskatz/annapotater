@@ -30,7 +30,6 @@ WriteMakefile(
   dist=>{
     COMPRESS => "gzip -9f",
     SUFFIX   => "gz",
-    PREOP    => $preop,
   },
   META_MERGE => {
     'meta-spec' => { version => 2 },
