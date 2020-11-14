@@ -8,6 +8,7 @@ Does not work on multisnp sites or indels.
 # Installation
 
     cd annapotater
+    perl Makefile.PL
     make
     make test
 
