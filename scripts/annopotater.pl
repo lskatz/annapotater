@@ -9,6 +9,10 @@ use File::Basename qw/basename/;
 use Array::IntSpan;
 use Bio::SeqIO;
 
+our $VERSION = 0.1;
+
+my @vcfHeader = qw(chrom pos id ref alt qual filter info format formatValues);
+
 local $0 = basename $0;
 sub logmsg{local $0=basename $0; print STDERR "$0: @_\n";}
 exit(main());
@@ -23,14 +27,35 @@ sub main{
   my ($sequence, $cds) = readGbk($gbk, $settings);
 
   for my $vcf(@vcf){
-    my $snps = readVcf($vcf, $settings);
+    my ($vcfHeader, $snps) = readVcf($vcf, $settings);
+    print $vcfHeader;
 
     # Decide which SNPs need to get annotated better
     for my $chrom(sort keys(%$snps)){
       for my $pos(sort{$a<=>$b} keys(%{$$snps{$chrom}})){
-        my $annotatedSnp = annotateSnp($$snps{$chrom}{$pos}, $sequence, $cds, $settings);
+        print "$chrom\t$pos";
+        my $thisSnp = $$snps{$chrom}{$pos};
+        my $effect = snpEffect($thisSnp, $sequence, $cds, $settings);
+
+        my $effString = "EFF=$effect";
+        my $info = $$thisSnp{info};
+        if($info eq '.'){
+          $info  = $effString;
+        }
+        else {
+          $info .= ";$effString";
+        }
+
+        $$thisSnp{info}=$info;
+
+        for my $h(@vcfHeader){
+          print "\t$$thisSnp{$h}";
+        }
+        print "\n";
+
       }
     }
+
 
   }
 
@@ -74,13 +99,16 @@ sub readGbk{
 sub readVcf{
   my($vcf, $settings) = @_;
 
-  my %snp;
+  my ($headerStr, %snp);
 
   my @header = qw(chrom pos id ref alt qual filter info format formatValues);
 
   open(my $fh, "zcat $vcf |") or die "ERROR: could not read $vcf: $!";
   while(<$fh>){
-    next if(/^#/);
+    if(/^#/){
+      $headerStr.=$_;
+      next;
+    }
 
     chomp;
 
@@ -109,14 +137,14 @@ sub readVcf{
   }
   close $fh;
 
-  return \%snp;
+  return ($headerStr, \%snp);
 }
 
 # args:
 #   $snp: the hash of snps with keys chrom pos id ref alt...
 #   $sequence: hash of seqid=>sequence
 #   $cds: hash of Array::IntSpan objects with CDS names
-sub annotateSnp{
+sub snpEffect{
   my($snp, $sequence, $cds, $settings) = @_;
 
   # Get some basic info on the SNP
@@ -125,6 +153,9 @@ sub annotateSnp{
   my $cdsInfo = $$cds{$chrom}->lookup($pos);
   my ($cdsName, $start, $end) = split(/~~~/, $cdsInfo);
   my $refSequence = $$sequence{$chrom};
+  my $refCds = substr($refSequence, $start, $end-$start+1);
+
+  my $name = "$$snp{ref}$pos$$snp{alt}";
 
   #$pos = 2; $start=2; $$snp{alt}="C"; $$snp{ref}=substr($refSequence,$pos-1,1); logmsg "DEBUG $$snp{ref}$pos$$snp{alt}";
 
@@ -133,33 +164,26 @@ sub annotateSnp{
 
   my $altSequence = $refSequence;
   substr($altSequence, $pos - 1, 1) = $$snp{alt};
+  my $altCds = substr($altSequence, $start, $end-$start+1);
 
-  # position within the CDS
-  my $posWithinCds = $pos - $start + 1; # one-based int
-  # 1, 2, or 3
-  my $codonPos = $posWithinCds % 3 + 1;
+  my $refAA = translate($refCds);
+  my $altAA = translate($altCds);
 
-  # Where the codon starts on the reference sequence
-  my $codonStart = $posWithinCds - $codonPos + 1;
-  my $refCodonSequence = substr($refSequence, $codonStart - 1 - $codonPos, 3);
-  my $altCodonSequence = substr($altSequence, $codonStart - 1 - $codonPos, 3);
+  # If nothing changed, then by definition, the mutation
+  # was synonymous
+  if($refAA eq $altAA){
+    return "SYNONYMOUS";
+  }
+  
+  # If there are more stops than the ref, then there was
+  # a stop codon
+  my $numRefStops = () = $refAA =~ /\*/g;
+  my $numAltStops = () = $altAA =~ /\*/g;
+  if($numRefStops < $numAltStops){
+    return "STOP";
+  }
 
-  my $refAA = translate($refCodonSequence);
-  my $altAA = translate($altCodonSequence);
-  #logmsg "substr(refSequence, $codonStart - 1, 3)";
-  #logmsg "refCodonSequence $refCodonSequence $refAA";
-  #logmsg "altCodonSequence $altCodonSequence $altAA";
-  #die;
-
-  logmsg substr($refSequence, 0, 60);
-  logmsg "posWithinCds $posWithinCds = $pos - $start + 1";
-  logmsg "  $$snp{ref}$pos$$snp{alt}";
-  logmsg "  codonPos     $codonPos = $posWithinCds % 3 + 1";
-  logmsg "  codonStart   $codonStart = $posWithinCds - $codonPos + 1";
-  logmsg "    refCodonSequence $refCodonSequence $refAA";
-  logmsg "    altCodonSequence $altCodonSequence $altAA";
-
-  #die;
+  return "NONSYNONYMOUS";
 }
 
 # Translate a DNA string
