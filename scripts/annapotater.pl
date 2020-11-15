@@ -9,7 +9,7 @@ use File::Basename qw/basename/;
 use Array::IntSpan;
 use Bio::SeqIO;
 
-our $VERSION = 0.2;
+our $VERSION = 0.3;
 
 my @vcfHeader = qw(chrom pos id ref alt qual filter info format formatValues);
 
@@ -28,7 +28,7 @@ sub main{
 
   my($gbk, @vcf) = @ARGV;
 
-  my ($sequence, $cds) = readGbk($gbk, $settings);
+  my ($seqs, $cds) = readGbk($gbk, $settings);
 
   for my $vcf(@vcf){
     my ($vcfHeader, $snps) = readVcf($vcf, $settings);
@@ -39,7 +39,7 @@ sub main{
       for my $pos(sort{$a<=>$b} keys(%{$$snps{$chrom}})){
         print "$chrom\t$pos";
         my $thisSnp = $$snps{$chrom}{$pos};
-        my $effect = snpEffect($thisSnp, $sequence, $cds, $settings);
+        my $effect = snpEffect($thisSnp, $seqs, $cds, $settings);
 
         my $effString = "EFF=$effect";
         my $info = $$thisSnp{info};
@@ -76,24 +76,37 @@ sub readGbk{
   while(my $seq = $in->next_seq){
     # Cache these two variables for some speed and readability
     my $seqid    = $seq->id;
-    my $sequence = $seq->seq;
 
-    $seq{$seqid} = $sequence;
+    $seq{$seqid} = $seq;
     $ranges{$seqid} = Array::IntSpan->new();
 
+    # Start the counter at -1 so that we can increment at
+    # the beginning of the loop before the CDS filter.
+    # Therefore any usage of $feature_count will let us use
+    # zero-based integers.
+    my $feature_count = -1;
     for my $feat($seq->get_SeqFeatures){
+      $feature_count++;
       next if($feat->primary_tag ne 'CDS');
+      #delete($$feat{_gsf_seq}); delete($$feat{_gsf_tag_hash}{translation}); die Dumper $feat;
 
-      my $start = $feat->location->start;
-      my $end   = $feat->location->end;
       my $name  = "hypothetical";
       if($feat->has_tag('gene')){
         $name = (sort $feat->get_tag_values('gene'))[0];
       }
 
-      $name .= "~~~$start~~~$end";
-      $ranges{$seqid}->set_range($start, $end, $name);
-      logmsg join("\t", $name, $start, $end) if($$settings{debug});
+      # Look at each location for the CDS.
+      # A CDS can be split and so it's best to loop through
+      # each location.
+      for my $location($feat->location->each_Location){
+        my $start = $location->start;
+        my $end   = $location->end;
+        my $strand= $location->strand;
+        my $loadedName = join("~~~",$name,$feature_count,$start,$end,$strand);
+        # Mark the location of this CDS
+        $ranges{$seqid}->set_range($start, $end, $loadedName);
+      }
+
     }
   }
 
@@ -113,6 +126,7 @@ sub readVcf{
       $headerStr.=$_;
       next;
     }
+    next if(/^\s*$/);
 
     chomp;
 
@@ -149,29 +163,47 @@ sub readVcf{
 #   $sequence: hash of seqid=>sequence
 #   $cds: hash of Array::IntSpan objects with CDS names
 sub snpEffect{
-  my($snp, $sequence, $cds, $settings) = @_;
+  my($snp, $seqs, $cds, $settings) = @_;
 
   # Get some basic info on the SNP
   my $chrom = $$snp{chrom};
   my $pos   = $$snp{pos};
   my $cdsInfo = $$cds{$chrom}->lookup($pos);
-  my ($cdsName, $start, $end) = split(/~~~/, $cdsInfo);
-  my $refSequence = $$sequence{$chrom};
-  my $refCds = substr($refSequence, $start, $end-$start+1);
+  if(!$cdsInfo){
+    return "NA";
+  }
 
-  my $name = "$$snp{ref}$pos$$snp{alt}";
+  my ($cdsName, $feature_idx, $start, $end, $strand) = split(/~~~/, $cdsInfo);
+  my $refSeq = $$seqs{$chrom};
+  my $altSeq = $refSeq->clone;
 
-  #$pos = 2; $start=2; $$snp{alt}="C"; $$snp{ref}=substr($refSequence,$pos-1,1); logmsg "DEBUG $$snp{ref}$pos$$snp{alt}";
-
-  # The sequence of the CDS
-  #my $refSequence = substr($$sequence{$chrom}, $start, $end - $start +1);
-
-  my $altSequence = $refSequence;
+  # mutate the altSeq with a substr() trick.
+  # With substr(), positions are in base-0 and not in
+  # base-1 like in bioperl.
+  my $altSequence = $altSeq->seq;
   substr($altSequence, $pos - 1, 1) = $$snp{alt};
-  my $altCds = substr($altSequence, $start, $end-$start+1);
+  $altSeq->seq($altSequence);
 
-  my $refAA = translate($refCds);
-  my $altAA = translate($altCds);
+  # Reference protein sequence
+  my @refFeat = $refSeq->get_SeqFeatures;
+  my $refFeature = $refFeat[$feature_idx];
+  my $refAA = $refFeature->seq->translate->seq;
+
+  # Alt protein sequence
+  my @altFeat = $altSeq->get_SeqFeatures;
+  my $altFeature = $altFeat[$feature_idx];
+  my $altAA = $altFeature->seq->translate->seq;
+
+  my $snpName = "$$snp{ref}$pos$$snp{alt}";
+
+  #logmsg "DEBUG"; $$settings{debug}=1;
+  if($$settings{debug}){
+    $refAA = substr($refAA, 600, 60);
+    $altAA = substr($altAA, 600, 60);
+    logmsg "$snpName";
+    logmsg "  $refAA";
+    logmsg "  $altAA";
+  }
 
   # If nothing changed, then by definition, the mutation
   # was synonymous
@@ -185,6 +217,9 @@ sub snpEffect{
   my $numAltStops = () = $altAA =~ /\*/g;
   if($numRefStops < $numAltStops){
     return "STOP";
+  }
+  if($numRefStops > $numAltStops){
+    return "STOPLOST";
   }
 
   return "NONSYNONYMOUS";

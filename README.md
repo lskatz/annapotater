@@ -1,7 +1,8 @@
 # Annapotater
 
 A quick and dirty SNP annotator.
-Only annotates SYNONYMOUS, NONSYNONYMOUS, or STOP.
+Only annotates SYNONYMOUS, NONSYNONYMOUS, STOP, STOPLOST, or NA.
+NA stands for "not assessed."
 
 Does not work on multisnp sites or indels.
 

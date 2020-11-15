@@ -18,11 +18,13 @@ subtest 'annotate' => sub{
   chomp(@out);
 
   my %expectedEff = (
-    3037  => "NONSYNONYMOUS",
+    3037  => "SYNONYMOUS",
     14408 => "SYNONYMOUS",
     16647 => "NONSYNONYMOUS",
-    23401 => "NONSYNONYMOUS",
+    23401 => "SYNONYMOUS",
     23403 => "NONSYNONYMOUS",
+    #29687 => "STOP",
+    29849 => "STOPLOST",
   );
 
   plan tests => scalar(keys(%expectedEff)) + 1;
@@ -36,10 +38,11 @@ subtest 'annotate' => sub{
     my @F = split(/\t/, $line);
     my $pos = $F[1];
     my @keyValue = split(/;/, $F[9]);
+    next if(!$expectedEff{$pos});
     for (@keyValue){
       my($key, $value) = split(/=/);
       if($key eq 'EFF'){
-        is($value, $expectedEff{$pos}, "Expected effect for $pos");
+        is($value, $expectedEff{$pos}, "Expected effect for $pos ($expectedEff{$pos})");
       }
     }
   }

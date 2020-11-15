@@ -293,6 +293,9 @@ FEATURES             Location/Qualifiers
                      /product="ORF10 protein"
                      /protein_id="QHI42199.1"
                      /translation="MGYINVFAFPFTIYSLLLCRMNSRNYIAQVDVVNFNLT"
+     CDS             complement(29847..29903)
+                     /gene=fakerevstrand
+                     /translation="FFFFFFFFFFFVILLRSY*"
      3'UTR           29675..29903
 ORIGIN      
         1 attaaaggtt tataccttcc caggtaacaa accaaccaac tttcgatctc ttgtagatct
