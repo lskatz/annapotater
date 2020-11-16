@@ -19,11 +19,12 @@ jobs:
       - run: perl -V
       - name: apt-get install
         run:  |
-          sudo apt-get install bioperl libdb-dev libberkeleydb-perl libxml-xpath-perl
+          sudo apt-get install bioperl libberkeleydb-perl
+          # sudo apt-get install bioperl libdb-dev libberkeleydb-perl libxml-xpath-perl
       - name: where the heck is bioperl from apt-get
         run:  |
-          sudo locate SeqIO.pm || true
-          sudo find / -name SeqIO.pm || true
+          sudo locate SeqIO.pm || echo "Can't locate SeqIO.pm"
+          sudo find / -name SeqIO.pm || echo "Can't find / -name SeqIO.pm"
       - name: dependency check
         run:  perl -MBio::SeqIO -e 1
       - run: cpanm --installdeps .
