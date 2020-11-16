@@ -1,5 +1,5 @@
-on: push
 name: unit-test
+on: [push]
 
 jobs:
   build:
