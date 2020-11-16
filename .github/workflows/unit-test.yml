@@ -19,7 +19,7 @@ jobs:
       - run: perl -V
       - name: apt-get install
         run:  |
-          sudo apt-get install --no-install-recommends bioperl libdb-dev libberkeleydb-perl xpath
+          sudo apt-get install --no-install-recommends bioperl libdb-dev libberkeleydb-perl libxml-xpath-perl
       - run: cpanm --installdeps .
       - run: prove -lv t
 
