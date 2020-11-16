@@ -16,6 +16,8 @@ jobs:
         with:
           perl-version: ${{ matrix.perl }}
       - run: perl -V
+      - name: apt-get install
+        run:  apt-get install bioperl
       - run: cpanm --installdeps .
       - run: prove -lv t
 
