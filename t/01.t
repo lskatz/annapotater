@@ -23,8 +23,8 @@ subtest 'annotate' => sub{
     16647 => "NONSYNONYMOUS",
     23401 => "SYNONYMOUS",
     23403 => "NONSYNONYMOUS",
-    #29687 => "STOP",
     29849 => "STOPLOST",
+    29850 => "STOP",
   );
 
   plan tests => scalar(keys(%expectedEff)) + 1;
