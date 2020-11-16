@@ -18,7 +18,9 @@ jobs:
           perl-version: ${{ matrix.perl }}
       - run: perl -V
       - name: apt-get install
-        run:  sudo apt-get install bioperl libdb-dev libberkeleydb-perl
+        run:  |
+          sudo apt-get update
+          sudo apt-get install --no-recommends bioperl libdb-dev libberkeleydb-perl
       - run: cpanm --installdeps .
       - run: prove -lv t
 
