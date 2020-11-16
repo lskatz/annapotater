@@ -20,7 +20,7 @@ jobs:
       - name: apt-get install
         run:  |
           sudo apt-get update
-          sudo apt-get install --no-recommends bioperl libdb-dev libberkeleydb-perl
+          sudo apt-get install --no-install-recommends bioperl libdb-dev libberkeleydb-perl
       - run: cpanm --installdeps .
       - run: prove -lv t
 
