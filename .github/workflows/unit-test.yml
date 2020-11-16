@@ -16,15 +16,14 @@ jobs:
         uses: shogo82148/actions-setup-perl@v1
         with:
           perl-version: ${{ matrix.perl }}
+      - name: initial envs
+        run:  |
+          echo "PERL5LIB=/usr/share/perl5" >> $GITHUB_ENV
       - run: perl -V
       - name: apt-get install
         run:  |
           sudo apt-get install bioperl libberkeleydb-perl
           # sudo apt-get install bioperl libdb-dev libberkeleydb-perl libxml-xpath-perl
-      - name: where the heck is bioperl from apt-get
-        run:  |
-          sudo locate SeqIO.pm || echo "Can't locate SeqIO.pm"
-          sudo find / -name SeqIO.pm || echo "Can't find / -name SeqIO.pm"
       - name: dependency check
         run:  perl -MBio::SeqIO -e 1
       - run: cpanm --installdeps .
