@@ -18,7 +18,7 @@ jobs:
           perl-version: ${{ matrix.perl }}
       - name: initial envs
         run:  |
-          echo "PERL5LIB=/usr/share/perl5" >> $GITHUB_ENV
+          echo "PERL5LIB=$PERL5LIB:/usr/share/perl5" >> $GITHUB_ENV
       - run: perl -V
       - name: apt-get install
         run:  |
