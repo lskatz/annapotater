@@ -20,6 +20,8 @@ jobs:
       - name: apt-get install
         run:  |
           sudo apt-get install --no-install-recommends bioperl libdb-dev libberkeleydb-perl libxml-xpath-perl
+      - name: dependency check
+        run:  perl -MBio::SeqIO -e 1
       - run: cpanm --installdeps .
       - run: prove -lv t
 
