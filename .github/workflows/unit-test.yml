@@ -9,7 +9,7 @@ jobs:
         os: ['ubuntu-latest']
         perl: [ '5.32', '5.30', '5.28' ]
         multi-thread: ["true", "false"]
-    name: Perl ${{ matrix.perl }} on ${{ matrix.os }} with multithreaded: ${{ matrix.multi-thread }}
+    name: Perl ${{ matrix.perl }} on ${{ matrix.os }} with multithreaded: ${{ matrix."multi-thread" }}
     steps:
       - uses: actions/checkout@v2
       - name: Set up perl
