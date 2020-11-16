@@ -1,3 +1,6 @@
+on: push
+name: unit-test
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
