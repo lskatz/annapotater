@@ -38,6 +38,8 @@ Adds a notation onto the INFO field with the key `EFF`.
 E.g.,
 `EFF=NONSYNONYMOUS`
 
+If you give `--prot`, will also have a field `AA=`.
+
 # Requirements
 
 * perl and perl modules:
