@@ -27,6 +27,7 @@ and then `cd` into the annapotater folder.
 Give it a genbank file with CDS features and sequence,
 and the next parameter is a gzipped VCF file.
 Use `--prot` to include protein translations.
+Use `--all` to output all sites, useful as a passthrough.
 
 # Output
 
