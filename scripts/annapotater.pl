@@ -9,7 +9,7 @@ use File::Basename qw/basename/;
 use Array::IntSpan;
 use Bio::SeqIO;
 
-our $VERSION = 0.3;
+our $VERSION = 0.4;
 
 my @vcfHeader = qw(chrom pos id ref alt qual filter info format formatValues);
 
@@ -19,7 +19,7 @@ exit(main());
 
 sub main{
   my $settings={};
-  GetOptions($settings,qw(version help)) or die $!;
+  GetOptions($settings,qw(prot|protein version help)) or die $!;
   if($$settings{version}){
     print "$0 v$VERSION\n";
     exit 0;
@@ -41,7 +41,10 @@ sub main{
         my $thisSnp = $$snps{$chrom}{$pos};
         my $effect = snpEffect($thisSnp, $seqs, $cds, $settings);
 
-        my $effString = "EFF=$effect";
+        my $effString = "EFF=$$effect{effect}";
+        if($$settings{prot}){
+          $effString.= ";AA=$$effect{altAA}";
+        }
         my $info = $$thisSnp{info};
         if($info eq '.'){
           $info  = $effString;
@@ -165,12 +168,17 @@ sub readVcf{
 sub snpEffect{
   my($snp, $seqs, $cds, $settings) = @_;
 
+  my %effect = (
+    effect  => "NA", 
+    altAA   => "",
+  );
+
   # Get some basic info on the SNP
   my $chrom = $$snp{chrom};
   my $pos   = $$snp{pos};
   my $cdsInfo = $$cds{$chrom}->lookup($pos);
   if(!$cdsInfo){
-    return "NA";
+    return \%effect;
   }
 
   my ($cdsName, $feature_idx, $start, $end, $strand) = split(/~~~/, $cdsInfo);
@@ -193,6 +201,7 @@ sub snpEffect{
   my @altFeat = $altSeq->get_SeqFeatures;
   my $altFeature = $altFeat[$feature_idx];
   my $altAA = $altFeature->seq->translate->seq;
+  $effect{altAA} = $altAA;
 
   my $snpName = "$$snp{ref}$pos$$snp{alt}";
 
@@ -208,7 +217,8 @@ sub snpEffect{
   # If nothing changed, then by definition, the mutation
   # was synonymous
   if($refAA eq $altAA){
-    return "SYNONYMOUS";
+    $effect{effect} = "SYNONYMOUS";
+    return \%effect;
   }
   
   # If there are more stops than the ref, then there was
@@ -216,13 +226,16 @@ sub snpEffect{
   my $numRefStops = () = $refAA =~ /\*/g;
   my $numAltStops = () = $altAA =~ /\*/g;
   if($numRefStops < $numAltStops){
-    return "STOP";
+    $effect{effect} = "STOP";
+    return \%effect;
   }
   if($numRefStops > $numAltStops){
-    return "STOPLOST";
+    $effect{effect} = "STOPLOST";
+    return \%effect;
   }
 
-  return "NONSYNONYMOUS";
+  $effect{effect} = "NONSYNONYMOUS";
+  return \%effect;
 }
 
 # Translate a DNA string
@@ -236,6 +249,7 @@ sub translate{
 sub usage{
   print "$0: annotates a VCF to stdout
   Usage: $0 [options] annotations.gbk 1.vcf.gz [2.vcf.gz...]
+  --prot   Add the protein sequence translation for any variant features
   --help   This useful help menu
 ";
   exit 0;
