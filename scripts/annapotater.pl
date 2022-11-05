@@ -9,7 +9,7 @@ use File::Basename qw/basename/;
 use Array::IntSpan;
 use Bio::SeqIO;
 
-our $VERSION = 0.4;
+our $VERSION = 0.5;
 
 my @vcfHeader = qw(chrom pos id ref alt qual filter info format formatValues);
 
@@ -19,7 +19,7 @@ exit(main());
 
 sub main{
   my $settings={};
-  GetOptions($settings,qw(prot|protein version help)) or die $!;
+  GetOptions($settings,qw(prot|protein all version help)) or die $!;
   if($$settings{version}){
     print "$0 v$VERSION\n";
     exit 0;
@@ -147,11 +147,15 @@ sub readVcf{
 
     # Don't care if there is no alt
     if($s{alt} eq '.'){
-      next;
+      if(!$$settings{all}){
+        next;
+      }
     }
     # Don't care if the references _is_ the alt
     if($s{ref} eq $s{alt}){
-      next;
+      if(!$$settings{all}){
+        next;
+      }
     }
 
     $snp{$s{chrom}}{$s{pos}} = \%s;
@@ -178,6 +182,11 @@ sub snpEffect{
   my $pos   = $$snp{pos};
   my $cdsInfo = $$cds{$chrom}->lookup($pos);
   if(!$cdsInfo){
+    return \%effect;
+  }
+
+  # If this isn't really a variant and the alt==ref, then no effect
+  if($$snp{alt} eq '.' || $$snp{alt} eq $$snp{ref}){
     return \%effect;
   }
 
@@ -250,6 +259,7 @@ sub usage{
   print "$0: annotates a VCF to stdout
   Usage: $0 [options] annotations.gbk 1.vcf.gz [2.vcf.gz...]
   --prot   Add the protein sequence translation for any variant features
+  --all    Output all VCF lines regardless of there being an effect. Warning: slow
   --help   This useful help menu
 ";
   exit 0;
