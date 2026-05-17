@@ -45,6 +45,7 @@ If you give `--prot`, will also have a field `AA=`.
 * perl and perl modules:
   * BioPerl
   * Array::IntSpan
+  * IO::Uncompress::Gunzip (included in core perl >= 5.10)
 
 # Etymology
 

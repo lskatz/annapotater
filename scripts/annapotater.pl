@@ -5,6 +5,7 @@ use strict;
 use Data::Dumper;
 use Getopt::Long;
 use File::Basename qw/basename/;
+use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 
 use Array::IntSpan;
 use Bio::SeqIO;
@@ -123,7 +124,7 @@ sub readVcf{
 
   my @header = qw(chrom pos id ref alt qual filter info format formatValues);
 
-  open(my $fh, "zcat $vcf |") or die "ERROR: could not read $vcf: $!";
+  my $fh = IO::Uncompress::Gunzip->new($vcf) or die "ERROR: could not read $vcf: $GunzipError";
   while(<$fh>){
     if(/^#/){
       $headerStr.=$_;
