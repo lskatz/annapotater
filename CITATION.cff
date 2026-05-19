@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: Annapotater
+abstract: "A quick and dirty SNP annotator. Annotates variants as SYNONYMOUS,
+  NONSYNONYMOUS, STOP, STOPLOST, or NA using a GenBank annotation file and a
+  gzipped VCF."
+authors:
+  - family-names: Katz
+    given-names: Lee
+    email: gzu2@cdc.gov
+    affiliation: "Centers for Disease Control and Prevention"
+    orcid: "https://orcid.org/0000-0002-2533-9161"
+version: "0.6"
+date-released: "2026-05-17"
+license: GPL-3.0
+repository-code: "https://github.com/lskatz/annapotater"

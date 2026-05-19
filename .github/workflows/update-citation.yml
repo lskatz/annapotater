@@ -1,0 +1,39 @@
+name: Update CITATION.cff on release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  update-citation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.target_commitish }}
+
+      - name: Extract version from Perl script
+        id: version
+        run: |
+          VERSION=$(perl -ne 'print $1 if /our \$VERSION\s*=\s*([\d.]+)/' scripts/annapotater.pl)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Get release date
+        id: date
+        run: echo "date=$(date -u +%Y-%m-%d)" >> $GITHUB_OUTPUT
+
+      - name: Update CITATION.cff
+        run: |
+          sed -i 's/^version: .*/version: "${{ steps.version.outputs.version }}"/' CITATION.cff
+          sed -i 's/^date-released: .*/date-released: "${{ steps.date.outputs.date }}"/' CITATION.cff
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CITATION.cff
+          git diff --cached --quiet || git commit -m "Update CITATION.cff for v${{ steps.version.outputs.version }}"
+          git push

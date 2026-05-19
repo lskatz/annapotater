@@ -8,6 +8,14 @@ Does not work on multisnp sites or indels.
 
 # Installation
 
+## Conda
+
+```bash
+conda create -n annapotater annapotater
+```
+
+## CPAN
+
 Step 1: download the latest release and decompress it somewhere,
 e.g., $HOME/bin/.../
 and then `cd` into the annapotater folder.
@@ -20,9 +28,13 @@ and then `cd` into the annapotater folder.
     # Make install is optional, if you want to put the script in $HOME/bin
     make install
 
+Step 2:
+
+    which annapotater
+
 # Usage
 
-    annapotater.pl t/data/MN908947.3.gbk t/data/SRR12894848.vcf.gz
+    annapotater t/data/MN908947.3.gbk t/data/SRR12894848.vcf.gz
 
 Give it a genbank file with CDS features and sequence,
 and the next parameter is a gzipped VCF file.
