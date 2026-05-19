@@ -10,7 +10,7 @@ authors:
     email: gzu2@cdc.gov
     affiliation: "Centers for Disease Control and Prevention"
     orcid: "https://orcid.org/0000-0002-2533-9161"
-version: "0.6.1"
+version: "0.7.1"
 date-released: "2026-05-19"
 license: GPL-3.0
 repository-code: "https://github.com/lskatz/annapotater"
