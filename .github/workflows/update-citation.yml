@@ -18,7 +18,7 @@ jobs:
       - name: Extract version from Perl script
         id: version
         run: |
-          VERSION=$(perl -ne 'print $1 if /our \$VERSION\s*=\s*([\d.]+)/' scripts/annapotater.pl)
+          VERSION=$(perl -ne 'print $1 if /our \$VERSION\s*=\s*([\d.]+)/' scripts/annapotater)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Get release date

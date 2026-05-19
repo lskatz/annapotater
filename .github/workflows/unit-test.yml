@@ -11,7 +11,7 @@ jobs:
         multi-thread: ["true", "false"]
     name: Perl ${{ matrix.perl }} on ${{ matrix.os }} with multithreaded ${{ matrix.multi-thread }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up perl
         uses: shogo82148/actions-setup-perl@v1
         with:
