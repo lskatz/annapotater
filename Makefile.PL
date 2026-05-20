@@ -7,10 +7,10 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile(
   NAME         => 'Annapotater',
-  VERSION_FROM => 'scripts/annapotater.pl',
+  VERSION_FROM => 'scripts/annapotater',
   AUTHOR => q{Lee S. Katz <gzu2@cdc.gov>},
   EXE_FILES    => [
-    'scripts/annapotater.pl',
+    'scripts/annapotater',
   ],
   PREREQ_PM    => {
     # Core modules
