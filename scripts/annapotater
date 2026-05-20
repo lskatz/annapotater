@@ -10,7 +10,7 @@ use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use Array::IntSpan;
 use Bio::SeqIO;
 
-our $VERSION = 0.7.2;
+our $VERSION = 0.7.3;
 
 my @vcfHeader = qw(chrom pos id ref alt qual filter info format formatValues);
 
